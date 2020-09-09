@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title> MLB Kevin Bacon </title>
+<link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+
+<body>
+<script src="jquery-3.5.1.min.js"></script>
+<script src="script.js"></script>
+<header class="center">
+  <h1>MLB Kevin Bacon</h1>
+  <h3>Find the shortest path between any 2 Major League Baseball players</h3>
+</header>
+<div id="main" class="center">
+  <form action='#'>
+    <input id="p1-input" type="hidden">
+    <input id="p2-input" type="hidden">
+    <input id="p1-text" type="text" list="player-list" name="player1" placeholder="Player 1">
+    <input id="p2-text" type="text" list="player-list" name="player2" placeholder="Player 2">
+    <datalist id="player-list"></datalist>
+    <input type="submit" class="button" value="submit">
+  </form>
+  <div id="results"></div>
+</div>
+</body>
+</html>
