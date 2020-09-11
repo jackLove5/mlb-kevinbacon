@@ -1,5 +1,10 @@
 from flask import Flask, Response, request
 from db_func import get_shortest_path, get_player_id, get_all_players
+import mysql.connector as mysql
+
+USER = ''
+PASSWORD = ''
+DATABASE = 'mlb'
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'changeme'
@@ -26,21 +31,28 @@ def style():
 
 @app.route('/players/')
 def get_players():
-  resp = get_all_players()
+  connection = mysql.connect(host='localhost', database=DATABASE, user=USER, password=PASSWORD)
+  resp = get_all_players(connection)
+  connection.close()
   return Response(response=resp, mimetype='application/json')
 
 @app.route('/connection/')
 def get_player_connection():
   player1 = request.args['player1']
   player2 = request.args['player2']
-
+  db_connection = mysql.connect(host='localhost', database=DATABASE, user=USER, password=PASSWORD)
+  
   try: 
-    player1 = get_player_id(player1)
-    player2 = get_player_id(player2)
+    player1 = get_player_id(db_connection.cursor(), player1)
+    player2 = get_player_id(db_connection.cursor(), player2)
+    ret = Response(response=get_shortest_path(db_connection, player1, player2), mimetype='application/json')
   except ValueError:
     return '{"message": "Error. Bad Request"}', 400
+  finally:
+    db_connection.close()
   
-  return Response(response=get_shortest_path(player1, player2), mimetype='application/json')
+  return ret
+  
 
 if __name__ == '__main__':
   app.run()

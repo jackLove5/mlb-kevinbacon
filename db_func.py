@@ -1,50 +1,55 @@
 import mysql.connector as mysql
 import json
-from tabulate import tabulate
 
 USER = ''
 PASSWORD = ''
+DATABASE = 'mlb'
 PLAYER_COUNT = 20005
 
 """
 Given a player, return all their teammates.
 Returns a list of player_ids
 """
-def get_all_teammates(player_id):
+def get_all_teammates(cursor, player_id):
   cursor.execute(f"""select distinct t2.PlayerID from TeamPlayer as t1
     inner join TeamPlayer as t2 on 
     t1.PlayerID = '{player_id}'
     and t1.Year = t2.Year and t1.TeamID = t2.TeamID;
     """)
 
-  return [x[0] for x in cursor.fetchall()]
+  res = cursor.fetchall()
+  cursor.close()
+  return res
 
 """
 Given a playerID, return the player's name
 """
-def get_player_name(player_id):
+def get_player_name(cursor, player_id):
   cursor.execute(f"""select FirstName, LastName from Player
     where ID = '{player_id}';
     """)
 
   tup = cursor.fetchall()[0]
+  cursor.close()
   return str(tup[0]) + ' ' + str(tup[1])
 
 """
 Given a teamID and year, return the team's name
 """
-def get_team_name(teamID, year):
+def get_team_name(cursor, teamID, year):
   cursor.execute(f"""select Name from Team
     where TeamID = '{teamID}' and Year = '{year}';
     """)
   
-  return cursor.fetchall()[0][0]
+  ret = cursor.fetchall()[0][0]
+  cursor.close()
+  return ret
 
 """
 Given two playerIDs, return a team that they played on together
 Return a 2 tuple in the form (teamName, teamYear)
 """
-def get_team_connection(player_1, player_2):
+def get_team_connection(cursor, player_1, player_2):
   cursor.execute(f"""select t1.TeamID, t1.Year from TeamPlayer as t1
     inner join TeamPlayer as t2 on
     t1.PlayerID = '{player_1}'
@@ -53,26 +58,33 @@ def get_team_connection(player_1, player_2):
     """)
   
   ret = cursor.fetchall()[0]
-  return (get_team_name(ret[0], ret[1]), ret[1])
+  ret = (get_team_name(cursor, ret[0], ret[1]), ret[1])
+  return ret
 
 
 """
 Given a player's frontID, validate it and return its playerID
 """
-def get_player_id(frontID):
+def get_player_id(cursor, frontID):
   frontID = int(frontID)
   if frontID < 1 or frontID > PLAYER_COUNT:
     raise ValueError
 
   cursor.execute(f"""select ID from Player where frontID = {frontID}""")
-  return cursor.fetchall()[0][0]
+  res = cursor.fetchall()[0][0]
+  cursor.close()
+  return res
 
 """
 Return all players in the database as JSON strings
 """
-def get_all_players():
+def get_all_players(connection):
+  cursor = connection.cursor()
+
   cursor.execute(f"""select * from Player""")
   player_list = cursor.fetchall()
+  cursor.close()
+
   res = []
   for row in player_list:
     frontID = row[1]
@@ -91,7 +103,7 @@ def get_all_players():
 Given two playerIDs, return a JSON object representing the shortest path
 between them.
 """
-def get_shortest_path(player_src, player_dst):
+def get_shortest_path(connection, player_src, player_dst):
   seen = set([player_dst])
   parent = {player_dst: None}
   queue = [player_dst]
@@ -100,8 +112,9 @@ def get_shortest_path(player_src, player_dst):
   # BFS
   while queue and not done:
     front = queue.pop(0)
-    teammates = get_all_teammates(front)
+    teammates = get_all_teammates(connection.cursor(), front)
     for teammate in teammates:
+      teammate = teammate[0]
       if teammate not in seen:
         queue.append(teammate)
         parent[teammate] = front
@@ -115,9 +128,9 @@ def get_shortest_path(player_src, player_dst):
   result = []
   while parent[next_player_id] is not None:
     teammate = parent[next_player_id]
-    team_name, year = get_team_connection(next_player_id, teammate)
+    team_name, year = get_team_connection(connection.cursor(), next_player_id, teammate)
     result.append({
-      'playerName': get_player_name(teammate),
+      'playerName': get_player_name(connection.cursor(), teammate),
       'teamName': team_name,
       'year': year}
       )
@@ -126,13 +139,9 @@ def get_shortest_path(player_src, player_dst):
 
   to_json = {
     'pathLength': len(result),
-    'startPlayer': get_player_name(player_src),
-    'endPlayer': get_player_name(player_dst),
+    'startPlayer': get_player_name(connection.cursor(), player_src),
+    'endPlayer': get_player_name(connection.cursor(), player_dst),
     'connections': result
   }
 
   return json.dumps(to_json)
-
-db_connection = mysql.connect(host='localhost', database='', user=USER, password=PASSWORD)
-cursor = db_connection.cursor()
-cursor.execute('use mlb')

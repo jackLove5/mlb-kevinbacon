@@ -1,8 +1,8 @@
 import mysql.connector as mysql
-from tabulate import tabulate
 
 USER = ''
 PASSWORD = ''
+DATABASE = 'mlb'
 
 db_connection = mysql.connect(host='localhost', database='', user=USER, password=PASSWORD)
 cursor = db_connection.cursor()
@@ -86,4 +86,6 @@ for f in files:
 
   ifile.close()
 
-db_connection.commit();
+db_connection.commit()
+cursor.close()
+db_connection.close()
