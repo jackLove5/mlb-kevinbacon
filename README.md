@@ -1,4 +1,4 @@
-# mlb-kevinbacon
+# [mlb-kevinbacon](https://jackLove5.pythonanywhere.com)
 Get the degrees of separation between MLB players from the years 1970-2020
 
 I originally created this project for the PickHacks 2019 hackathon. The original project ran solely from the command line and built a graph from data scraped from baseball-reference.com. For this project, I created an SQL database using some of the data from the Baseball Databank found [here](https://github.com/chadwickbureau/baseballdatabank/). This program finds the shortest path between players by performing Breadth-First Search on the SQL database.
