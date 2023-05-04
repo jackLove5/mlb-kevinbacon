@@ -1,0 +1,25 @@
+{
+  "name": "mlb-kevinbacon",
+  "version": "1.0.0",
+  "description": "Get the degrees of separation between MLB players from the years 1970-2020",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jackLove5/mlb-kevinbacon.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jackLove5/mlb-kevinbacon/issues"
+  },
+  "homepage": "https://github.com/jackLove5/mlb-kevinbacon#readme",
+  "dependencies": {
+    "@redis/graph": "^1.1.0",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "redis": "^4.6.6"
+  }
+}
